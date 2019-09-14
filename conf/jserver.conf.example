@@ -1,0 +1,17 @@
+# base conf
+root = /home/linjie/data/Code/Cpp/jserver
+port = 8000
+# immedit: 0, granceful: 1
+shutdown = 1
+
+# log conf
+log_dir = /home/linjie/data/Code/Cpp/jserver/log
+logtostderr = 0
+alsologtostderr = 1
+# INFO: 0, WARNING: 1, ERROR: 2 FATAL: 3
+stderrthreshold = 2
+log_prefix = 1
+colorlogtostderr = 1
+logbufsecs = 0
+max_log_size = 10
+stop_logging_if_full_disk = 1

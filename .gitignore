@@ -1,0 +1,10 @@
+.DS_Store
+.ccls-cache
+.idea
+*.log
+tmp/
+
+
+doc/
+build/
+bak_up/

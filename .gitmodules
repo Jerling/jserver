@@ -1,0 +1,6 @@
+[submodule "third_part/benchmark"]
+	path = third_part/benchmark
+	url = https://github.com/google/benchmark.git
+[submodule "third_part/glog"]
+	path = third_part/glog
+	url = https://github.com/google/glog.git

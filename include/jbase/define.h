@@ -37,6 +37,10 @@
 #define JS_UCHAR u_char
 
 #define JS_SIZE_T size_t
+#define JS_MALLOC malloc
+#define JS_FREE free
+#define JS_NEW new
+#define JS_DELETE delete
 
 #define JS_NULL nullptr
 #define JS_EVENT epoll_event

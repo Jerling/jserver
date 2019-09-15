@@ -2,7 +2,7 @@
 #define __FILE_WRAPPER_H_
 
 #include <assert.h>
-#include "jnet/define.h"
+#include "jbase/define.h"
 
 namespace jnet {
 

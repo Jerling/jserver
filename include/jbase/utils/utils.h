@@ -33,9 +33,9 @@ JS_SHARED_PTR<T> Singleton<T>::_Ins(new T());
 
 static JS_INT32 SetNoBlocking(JS_INT32 Fd) {
   JS_INT32 Flags;
-  JS_PCHECK(fcntl(Fd, F_GETFL, &Flags) == 0) << "Get Flags Failed";
+  JS_PCHECK(-1 != fcntl(Fd, F_GETFL, &Flags)) << "Get Flags Failed";
   auto Ret = fcntl(Fd, F_SETFL, Flags | O_NONBLOCK);
-  JS_PCHECK(Ret == 0) << "Set Flags Failed";
+  JS_PCHECK(1 != Ret) << "Set Flags Failed";
   return Ret;
 }
 

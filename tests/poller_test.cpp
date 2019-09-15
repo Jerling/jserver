@@ -4,10 +4,11 @@ int main(int argc, char *argv[]) {
   JS_INF() << "Starting ...";
   jnet::listen::Listener ln = jnet::listen::Listener();
   JS_EVENT evs[1025];
-  int n = 0;
+  int n = 0, nums;
   int events = evs[0].events;
   JS_STL_STRING Str;
 
+  char Res[] = "Server";
   while (true) {
     if ((n = ln.Wait(evs) > 0)) {
       for (int i = 0; i < n; i++) {
@@ -16,14 +17,16 @@ int main(int argc, char *argv[]) {
         auto Ptr = (jnet::conn::Connect *)evs[i].data.ptr;
         if (ev & (EPOLLIN | EPOLLERR)) {
           if (ln.GetLfd() == fd) {
-            JS_INF_IF(ln.Accept() == 0) << "Connected";
+            ln.Accept();
           } else {
-            JS_INF_IF(Ptr->Read(Str) > 0)
-                << "Recv " << Str.size() << " bytes : " << Str;
+            char Buf[1024];
+            nums = Ptr->GetReadBufData(Buf, 1024);
+            JS_WAR() << "Recv " << nums << " : " << Buf << " end";
+            nums = Ptr->SetWriteBuf(Res, sizeof(Res));
+            JS_WAR() << "Send " << nums << " Bytes";
           }
-        }
-        if (ev & EPOLLOUT) {
-          Ptr->Write("Server");
+        } else if (ev & EPOLLOUT) {
+          Ptr->FromWriteBufToCfd();
         }
       }
     }

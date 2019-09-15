@@ -66,10 +66,12 @@ JS_INT32 Listener::UnRegister() {
 JS_INT32 Listener::Accept() {
   JS_INT32 Cfd = accept(_Lfd, JS_NULL, 0);
   JS_PCHECK(Cfd > 0) << "Accept Failed";
+  JS_WAR() << "Connected at " << Cfd;
   utils::SetNoBlocking(Cfd);
   JS_EVENT Event;
   Event.events = Default_Event | EPOLLET;
-  Event.data.ptr = (void *)(new Connect(Cfd));
+  Event.data.ptr = (JS_VOID *)(new Connect(&_Poller, Cfd));
+  JS_WAR() << "New Conn at " << Event.data.ptr;
   return _Poller.Add(Cfd, &Event);
 }
 

@@ -1,7 +1,6 @@
 #ifndef __CONF_H_
 #define __CONF_H_
 
-#include "jnet/define.h"
 #include "jbase/fs/file_wrapper.h"
 
 namespace jnet {

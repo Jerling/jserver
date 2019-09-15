@@ -1,6 +1,8 @@
 #include "jbase/log/logging.h"
 
 // auto init and deinit glog
+#ifdef USE_GLOG
+
 static GlogHelper GH;
 
 JS_VOID SetGlogFlag(const JS_STL_STRING &ProcName,
@@ -24,3 +26,5 @@ GlogHelper::GlogHelper() {
   google::InitGoogleLogging("jnet");
   FLAGS_logtostderr = JS_TRUE;
 }
+
+#endif

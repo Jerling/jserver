@@ -14,8 +14,10 @@ int main(int argc, char *argv[]) {
     connect(sfd[i], (struct sockaddr *)&sa, sizeof(sa));
     sprintf(str, "Client %04d \n test enter", i);
     write(sfd[i], str, nums);
-    read(sfd[i], str, nums);
-    std::cout << "From server : " << str << std::endl;
+    std::cout << "Write Over" << std::endl;
+    memset(str, 0, nums);
+    int ret = read(sfd[i], str, nums);
+    std::cout << "Recv " << ret << " bytes from server : " << str << std::endl;
   }
   for (int i; i < conns; i++) {
     close(sfd[i]);

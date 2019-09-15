@@ -17,10 +17,12 @@ class EPoller : NoCopyAble {
   JS_INT32 Wait(JS_EVENT *Event, JS_UINT32 Timeout);
 
  private:
+  JS_INT32 _SetSigHandle();
+
  private:
   JS_INT32 _Efd;
 };
-
+using Poller = EPoller;
 }  // namespace poller
 }  // namespace jnet
 

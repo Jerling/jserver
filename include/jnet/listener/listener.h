@@ -1,12 +1,12 @@
 #ifndef __LISTENER_H_
 #define __LISTENER_H_
+#include "jbase/utils/utils.h"
 #include "jnet/connect/connect.h"
 #include "jnet/poller/poller.h"
-#include "jbase/utils/utils.h"
 
-namespace jnet{
+namespace jnet {
 namespace listen {
-using Poller = poller::EPoller;
+using Poller = poller::Poller;
 using Connect = conn::Connect;
 
 static const JS_INT32 Default_Event = EPOLLIN | EPOLLOUT | EPOLLERR;

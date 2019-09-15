@@ -1,30 +1,56 @@
 #ifndef __CONNECT_H_
 #define __CONNECT_H_
 
-#include "jbase/log/logging.h"
+#include "jbase/buffer/buffer.h"
 #include "jbase/utils/utils.h"
+#include "jnet/poller/poller.h"
 
 namespace jnet {
 namespace conn {
 using NoCopyAble = utils::NonCopyAble;
-static const JS_UINT32 MaxLine = 8192;
+using Poller = poller::Poller;
+using Buffer = buffer::Buffer;
+using IBuffer = buffer::IBuffer;
+using OBuffer = buffer::OBuffer;
+
+enum STATE { NonDelete = 0, NeedDelete };
+
 class Connect : NoCopyAble {
  public:
-  Connect(JS_INT32 Cfd = 0)
-      : _Cfd(Cfd), _KeepAlive(JS_TRUE), _Deleted(JS_TRUE){};
+  Connect(Poller* Poller, JS_INT32 Cfd);
+  ~Connect();
 
-  JS_UINT32 Read(JS_STL_STRING& Str);
-  JS_UINT32 Write(const JS_STL_STRING& Str);
-  JS_VOID InvertKeepAlive() { _KeepAlive = ~_KeepAlive; }
+  STATE GetState() const { return _State; }
+  JS_INT32 Unregister();
+
+  JS_UINT32 GetReadBufData(JS_CHAR* Buf, JS_UINT32 Len);
+  JS_UINT32 GetReadBufCapacity() const;
+  JS_UINT32 FromCfdToReadBuf();
+
+  JS_UINT32 SetWriteBuf(JS_CHAR* Buf, JS_UINT32 Len);
+  JS_UINT32 FromWriteBufToCfd();
+  JS_BOOL IsWriteDone() const;
+
+  static JS_VOID DoDelete();
+  static JS_STL_LIST<Connect*>& GetNeedDel() { return _NeedDel; }
+  static JS_MUTEX& GetDelListMutex() { return _DelListMutex; }
+  static const JS_STL_UMAP<JS_INT32, Connect*>& GetConns() { return _Conns; }
+
+ private:
+  JS_INT32 _HandleRST();
 
  private:
   JS_INT32 _Cfd;
   JS_BOOL _KeepAlive;
-  JS_BOOL _Deleted;
-  JS_CHAR _Buffer[MaxLine];
+  STATE _State;
 
-  static JS_STL_LIST<void*> _NeedDel;
-  static JS_MUTEX DelListMutex;
+  Buffer* _ReadBuf;
+  Buffer* _WriteBuf;
+
+  static JS_STL_LIST<Connect*> _NeedDel;
+  static JS_STL_UMAP<JS_INT32, Connect*> _Conns;
+  static JS_MUTEX _DelListMutex;
+  static Poller* _Poller;
 };
 }  // namespace conn
 }  // namespace jnet

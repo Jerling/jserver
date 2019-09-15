@@ -3,8 +3,8 @@
 
 #include <assert.h>
 #include <glog/logging.h>
-#include "config.h"
 #include "jbase/conf/conf.h"
+#include "jbase/config.h"
 
 #ifdef USE_GLOG
 
@@ -75,7 +75,7 @@
 #define JS_PERR_FIRST_N(N) PLOG_FIRST_N(ERROR, N)
 #define JS_PFAT_FIRST_N(N) PLOG_FIRST_N(FATAL, N)
 #define JS_PCHECK(expr) PCHECK(expr)
-#define JS_PCHECK_NOTNULL(expr) PCHECK_NOTNULL(expr)
+#define JS_PCHECK_NOTNULL(expr) PCHCK_NE(expr, nullptr)
 #define JS_PCHECK_NE(v1, v2) PCHECK_NE(v1, v2)
 #define JS_PCHECK_EQ(v1, v2) PCHECK_EQ(v1, v2)
 
@@ -127,5 +127,35 @@ class GlogHelper {
 #define JS_CHECK_NE(v1, v2) assert(v1 != v2)
 #define JS_CHECK_EQ(v1, v2) assert(v1 == v2)
 
+// Perror
+#define JS_PLOG(level) std::clog
+#define JS_PINF() std::clog
+#define JS_PWAR() std::cerr
+#define JS_PERR() std::cerr
+#define JS_PFAT() std::cerr
+#define JS_PLOG_IF(level, cond) std::clog
+#define JS_PINF_IF(cond) std::clog
+#define JS_PWAR_IF(cond) std::cerr
+#define JS_PERR_IF(cond) std::cerr
+#define JS_PFAT_IF(cond) std::cerr
+#define JS_PLOG_EVERY_N(level, times) std::clog
+#define JS_PINF_EVERY_N(times) std::clog
+#define JS_PWAR_EVERY_N(times) std::cerr
+#define JS_PERR_EVERY_N(times) std::cerr
+#define JS_PFAT_EVERY_N(times) std::cerr
+#define JS_PLOG_IF_EVERY_N(level, times) std::clog
+#define JS_PINF_IF_EVERY_N(times) std::clog
+#define JS_PWAR_IF_EVERY_N(times) std::cerr
+#define JS_PERR_IF_EVERY_N(times) std::cerr
+#define JS_PFAT_IF_EVERY_N(times) std::cerr
+#define JS_PLOG_FIRST_N(level, N) std::clog
+#define JS_PINF_FIRST_N(N) std::clog
+#define JS_PWAR_FIRST_N(N) std::cerr
+#define JS_PERR_FIRST_N(N) std::cerr
+#define JS_PFAT_FIRST_N(N) std::cerr
+#define JS_PCHECK(expr) std::cerr
+#define JS_PCHECK_NOTNULL(expr) std::cerr
+#define JS_PCHECK_NE(v1, v2) std::cerr
+#define JS_PCHECK_EQ(v1, v2) std::cerr
 #endif
 #endif  // __LOGGING_H_

@@ -8,7 +8,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 
 configure_file (
   "${PROJECT_SOURCE_DIR}/config.h.in"
-  "${PROJECT_SOURCE_DIR}/include/config.h"
+  "${PROJECT_SOURCE_DIR}/include/jbase/config.h"
   )
 
 option(USE_GLOG "Use google log" ON)

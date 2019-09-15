@@ -10,6 +10,8 @@ set(CMAKE_BUILD_TYPE Debug)
 aux_source_directory(../src/jbase/fs SRC_LISTS)
 aux_source_directory(../src/jbase/conf SRC_LISTS)
 aux_source_directory(../src/jbase/log SRC_LISTS)
+aux_source_directory(../src/jbase/buffer SRC_LISTS)
+
 aux_source_directory(../src/jnet/poller SRC_LISTS)
 aux_source_directory(../src/jnet/listener SRC_LISTS)
 aux_source_directory(../src/jnet/connect SRC_LISTS)

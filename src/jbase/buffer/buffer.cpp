@@ -2,59 +2,53 @@
 
 namespace jnet {
 namespace buffer {
-Buffer::Buffer(JS_UINT32 SZ, JS_CHAR *Ptr)
-    : Data(Ptr), Size(SZ), LowWater(0), HightWater(0) {
-  if (Size == 0 || !Ptr) {
-    return;
-  }
+Buffer::Buffer(JS_INT32 Fd, JS_UINT32 SZ)
+    : _Fd(Fd), _Size(SZ), _LowWater(0), _HightWater(0) {
+  _Data = (JS_CHAR *)JS_MALLOC(sizeof(JS_CHAR) * _Size);
+  memset(_Data, 0, _Size);
 }
 
 JS_VOID Buffer::StateInfo() {
   JS_CHAR msg[MaxLine + 32];
-  sprintf(msg, "%p %s %d %d %d", Data, Data, LowWater, HightWater, Size);
+  sprintf(msg, "%p %s %d %d %d", _Data, _Data, _LowWater, _HightWater, _Size);
   JS_WAR() << msg;
 }
 
-JS_UINT32 Buffer::Product(JS_CHAR *Ptr, JS_UINT32 Len) {
+JS_BOOL Buffer::IsFull() const {
+  return (_HightWater + 1) % _Size == _LowWater;
+}
+JS_BOOL Buffer::IsEmpty() const {
+  return _Data == JS_NULL || _HightWater == _LowWater;
+}
+JS_UINT32 Buffer::Length() const {
+  return _HightWater < _LowWater ? _Size - _LowWater : _HightWater - _LowWater;
+}
+JS_UINT32 Buffer::Remain() const {
+  return _HightWater >= _LowWater ? _Size - _HightWater
+                                  : _LowWater - _HightWater;
+}
+JS_VOID Buffer::Append(const JS_CHAR *Ptr, JS_UINT32 Len) {
   if (IsFull()) {
     JS_WAR() << "Buffer Is Full";
-    return 0;
+    return;
   }
   auto SZ = std::min(Len, Remain());
   memmove(End(), Ptr, SZ);
-  HightWater = (HightWater + SZ) % Size;
-  return SZ;
+  _HightWater = (_HightWater + SZ) % _Size;
 }
 
-IBuffer::IBuffer(JS_UINT32 SZ) : Buffer(SZ) {
-  Data = (JS_CHAR *)malloc(sizeof(JS_CHAR) * Size);
-  JS_PCHECK(JS_NULL != Data) << "Malloc Buffer Failed";
-  memset(Data, 0, Size);
-}
-
-IBuffer::IBuffer(const IBuffer &Buf) {
-  Size = Buf.Size;
-  LowWater = Buf.LowWater;
-  HightWater = Buf.HightWater;
-  Data = (JS_CHAR *)JS_MALLOC(sizeof(JS_CHAR) * Size);
-  memmove(Data, Buf.Data, Size);
-}
-
-IBuffer IBuffer::operator=(const IBuffer &Buf) {
-  if (!Data) {
-    free(Data);
+JS_VOID Buffer::_ReadFromFd() {
+  JS_CHAR Ch;
+  while (!IsFull() && (read(_Fd, &Ch, 1) > 0)) {
+    *End() = Ch;
+    ++_HightWater;
   }
-  Size = Buf.Size;
-  LowWater = Buf.LowWater;
-  HightWater = Buf.HightWater;
-  Data = (JS_CHAR *)JS_MALLOC(sizeof(JS_CHAR) * Size);
-  memmove(Data, Buf.Data, Size);
-  return *this;
 }
 
-IBuffer::~IBuffer() { free(Data); }
-
-JS_UINT32 IBuffer::Consume(JS_CHAR *Ptr, JS_UINT32 Len) {
+JS_UINT32 Buffer::Read(JS_CHAR *Ptr, JS_UINT32 Len) {
+  if (Length() < Len) {
+    _ReadFromFd();
+  }
   if (0 == Len) {
     return 0;
   }
@@ -64,46 +58,35 @@ JS_UINT32 IBuffer::Consume(JS_CHAR *Ptr, JS_UINT32 Len) {
   }
   auto SZ = std::min(Len, Length());
   memmove(Ptr, Start(), SZ);
-  LowWater = (LowWater + SZ) % Size;
+  _LowWater = (_LowWater + SZ) % _Size;
   return SZ;
 }
 
-OBuffer::OBuffer(JS_CHAR *Ptr, JS_UINT32 SZ) : Buffer(SZ, Ptr) {
-  HightWater = SZ;
-  ;
-}
-
-OBuffer::OBuffer(const OBuffer &Buf) {
-  Size = Buf.Size;
-  LowWater = Buf.LowWater;
-  HightWater = Buf.HightWater;
-  Data = (JS_CHAR *)JS_MALLOC(sizeof(JS_CHAR) * Size);
-  memmove(Data, Buf.Data, Size);
-}
-
-OBuffer OBuffer::operator=(const OBuffer &Buf) {
-  Size = Buf.Size;
-  LowWater = Buf.LowWater;
-  HightWater = Buf.HightWater;
-  Data = (JS_CHAR *)JS_MALLOC(sizeof(JS_CHAR) * Size);
-  memmove(Data, Buf.Data, Size);
-  return *this;
-}
-
-JS_UINT32 OBuffer::Consume(JS_CHAR *, JS_UINT32 Fd) {
-  JS_UINT32 Ret, OldLow = LowWater;
-  while (!IsEmpty() && (Ret = write(Fd, Start(), Length()) > 0)) {
-    LowWater += Ret;
+JS_UINT32 Buffer::_WriteToFd() {
+  JS_UINT32 Ret, OldLow = _LowWater;
+  while (!IsEmpty() && (Ret = write(_Fd, Start(), Length() > 0))) {
+    _LowWater += Ret;
   }
-  Ret = LowWater - OldLow;
-  if (EAGAIN == errno || EWOULDBLOCK == errno) {
-    return Ret;
-  }
-  JS_PCHECK(Ret >= 0) << "Write at " << Fd << " Error";
-  return Ret;
+  return _LowWater - OldLow;
 }
 
-JS_UINT32 OBuffer::Consume(JS_INT32 Fd) { return Consume(JS_NULL, Fd); }
+JS_UINT32 Buffer::Write(const JS_CHAR *Ptr, JS_UINT32 Len) {
+  if (JS_NULL == Ptr) {
+    return _WriteToFd();
+  } else {
+    Append(Ptr, Len);
+  }
+  JS_UINT32 Ret, OldLow = _LowWater;
+  auto SZ = std::min(Len, Length());
+  if (0 == SZ) {
+    return 0;
+  }
+  while (!IsEmpty() && (Ret = write(_Fd, Start(), SZ > 0))) {
+    _LowWater += Ret;
+    SZ -= Ret;
+  }
+  return _LowWater - OldLow;
+}
 
 }  // namespace buffer
 }  // namespace jnet

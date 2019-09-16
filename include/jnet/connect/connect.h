@@ -10,8 +10,6 @@ namespace conn {
 using NoCopyAble = utils::NonCopyAble;
 using Poller = poller::Poller;
 using Buffer = buffer::Buffer;
-using IBuffer = buffer::IBuffer;
-using OBuffer = buffer::OBuffer;
 
 enum STATE { NonDelete = 0, NeedDelete };
 
@@ -23,13 +21,8 @@ class Connect : NoCopyAble {
   STATE GetState() const { return _State; }
   JS_INT32 Unregister();
 
-  JS_UINT32 GetReadBufData(JS_CHAR* Buf, JS_UINT32 Len);
-  JS_UINT32 GetReadBufCapacity() const;
-  JS_UINT32 FromCfdToReadBuf();
-
-  JS_UINT32 SetWriteBuf(JS_CHAR* Buf, JS_UINT32 Len);
-  JS_UINT32 FromWriteBufToCfd();
-  JS_BOOL IsWriteDone() const;
+  JS_UINT32 DoRead(JS_CHAR* Ptr, JS_UINT32 Len);
+  JS_UINT32 DoWrite(const JS_CHAR* Ptr = JS_NULL, JS_UINT32 Len = 0);
 
   static JS_VOID DoDelete();
   static JS_STL_LIST<Connect*>& GetNeedDel() { return _NeedDel; }

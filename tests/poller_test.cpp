@@ -20,13 +20,13 @@ int main(int argc, char *argv[]) {
             ln.Accept();
           } else {
             char Buf[1024];
-            nums = Ptr->GetReadBufData(Buf, 1024);
+            nums = Ptr->DoRead(Buf, 1024);
             JS_WAR() << "Recv " << nums << " : " << Buf << " end";
-            nums = Ptr->SetWriteBuf(Res, sizeof(Res));
+            nums = Ptr->DoWrite(Res, sizeof(Res));
             JS_WAR() << "Send " << nums << " Bytes";
           }
         } else if (ev & EPOLLOUT) {
-          Ptr->FromWriteBufToCfd();
+          Ptr->DoWrite();
         }
       }
     }
